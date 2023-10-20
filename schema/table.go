@@ -1,30 +1,43 @@
 package schema
 
-import (
-	"fmt"
-)
+type TablePredicate = Predicate[Table]
+type TableConsumer = Consumer[Table]
 
-type Table struct {
-	Name    string    `json:"name"`
-	Columns []*Column `json:"columns"`
+type Table interface {
+	Namer
+	NumColumns() uint
+	ForEachColumn(consumer ColumnConsumer)
 }
 
-func (t Table) Append(out []byte) []byte {
-	out = append(out, t.Name...)
-	out = append(out, '(')
-	for index, c := range t.Columns {
-		if index > 0 {
-			out = append(out, ',', ' ')
-		}
-		out = c.Append(out)
+func MakeTable(name string, columns ...Column) Table {
+	dupe := make([]Column, len(columns))
+	copy(dupe, columns)
+	return &genericTable{name: name, columns: dupe}
+}
+
+type genericTable struct {
+	name    string
+	columns []Column
+}
+
+func (t *genericTable) Name() string {
+	return t.name
+}
+
+func (t *genericTable) NumColumns() uint {
+	return uint(len(t.columns))
+}
+
+func (t *genericTable) ForEachColumn(consumer ColumnConsumer) {
+	for _, c := range t.columns {
+		consumer.Consume(c)
 	}
-	out = append(out, ')')
+}
+
+var _ Table = (*genericTable)(nil)
+
+func Columns(t Table, preds ...ColumnPredicate) []Column {
+	out := make([]Column, 0, t.NumColumns())
+	t.ForEachColumn(AppendConsumer(&out, preds...))
 	return out
 }
-
-func (t Table) String() string {
-	var scratch [256]byte
-	return string(t.Append(scratch[:0]))
-}
-
-var _ fmt.Stringer = Table{}

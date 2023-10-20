@@ -1,24 +1,28 @@
 package schema
 
 import (
-	"fmt"
+	"github.com/chronos-tachyon/pyooq/types"
 )
 
-type Column struct {
-	Name string `json:"name"`
-	Type Type   `json:"type"`
+type Type = types.Type
+type ColumnPredicate = Predicate[Column]
+type ColumnConsumer = Consumer[Column]
+
+type Column interface {
+	Namer
+	Typer
 }
 
-func (c Column) Append(out []byte) []byte {
-	out = append(out, c.Name...)
-	out = append(out, ':', ' ')
-	out = append(out, c.Type.String()...)
-	return out
+func MakeColumn(colName string, colType Type) Column {
+	return &genericColumn{colName: colName, colType: colType}
 }
 
-func (c Column) String() string {
-	var scratch [64]byte
-	return string(c.Append(scratch[:0]))
+type genericColumn struct {
+	colName string
+	colType Type
 }
 
-var _ fmt.Stringer = Column{}
+func (c *genericColumn) Name() string { return c.colName }
+func (c *genericColumn) Type() Type   { return c.colType }
+
+var _ Column = (*genericColumn)(nil)

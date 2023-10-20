@@ -1,28 +1,34 @@
 package schema
 
-import (
-	"fmt"
-)
-
-type Schema struct {
-	Tables []*Table `json:"tables"`
+type Schema interface {
+	NumTables() uint
+	ForEachTable(consumer Consumer[Table])
 }
 
-func (s *Schema) Append(out []byte) []byte {
-	out = append(out, '[')
-	for index, t := range s.Tables {
-		if index > 0 {
-			out = append(out, ';', ' ')
-		}
-		out = t.Append(out)
+func MakeSchema(tables ...Table) Schema {
+	dupe := make([]Table, len(tables))
+	copy(dupe, tables)
+	return &genericSchema{tables: tables}
+}
+
+type genericSchema struct {
+	tables []Table
+}
+
+func (s *genericSchema) NumTables() uint {
+	return uint(len(s.tables))
+}
+
+func (s *genericSchema) ForEachTable(consumer TableConsumer) {
+	for _, t := range s.tables {
+		consumer.Consume(t)
 	}
-	out = append(out, ']')
+}
+
+var _ Schema = (*genericSchema)(nil)
+
+func Tables(s Schema, preds ...TablePredicate) []Table {
+	out := make([]Table, 0, s.NumTables())
+	s.ForEachTable(AppendConsumer(&out, preds...))
 	return out
 }
-
-func (s *Schema) String() string {
-	var scratch [1024]byte
-	return string(s.Append(scratch[:0]))
-}
-
-var _ fmt.Stringer = (*Schema)(nil)

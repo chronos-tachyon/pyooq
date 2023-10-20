@@ -3,15 +3,20 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/chronos-tachyon/pyooq/codegen"
-	"github.com/chronos-tachyon/pyooq/schema"
+	"github.com/chronos-tachyon/pyooq/repr"
 )
+
+var reGeneratedCode = regexp.MustCompile(`(?i)generated\s+code`)
 
 func main() {
 	var flagSchema string
@@ -33,7 +38,7 @@ func main() {
 		panic(err)
 	}
 
-	var s schema.Schema
+	var s repr.Schema
 	d := json.NewDecoder(bytes.NewReader(raw))
 	d.DisallowUnknownFields()
 	d.UseNumber()
@@ -59,6 +64,23 @@ func main() {
 
 	for _, file := range files {
 		filePath := filepath.Join(flagOutputDir, filepath.FromSlash(file.Path))
+
+		contents, err := os.ReadFile(filePath)
+		ok := false
+		switch {
+		case err == nil:
+			match := reGeneratedCode.Find(contents)
+			ok = (match != nil)
+		case errors.Is(err, fs.ErrNotExist):
+			ok = true
+		default:
+			panic(err)
+		}
+
+		if !ok {
+			panic(fmt.Errorf("refusing to overwrite existing file %q", filePath))
+		}
+
 		os.WriteFile(filePath, file.Contents, 0o666)
 	}
 }
