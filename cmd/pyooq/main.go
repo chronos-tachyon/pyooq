@@ -57,7 +57,7 @@ func main() {
 	}
 
 	var g codegen.CodeGenerator = codegen.Go{}
-	files, err := g.GenerateCode(s, params)
+	files, err := g.GenerateCode(&s, params)
 	if err != nil {
 		panic(err)
 	}

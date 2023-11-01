@@ -3,12 +3,12 @@ package repr
 import (
 	"fmt"
 
-	"github.com/chronos-tachyon/pyooq/types"
+	"github.com/chronos-tachyon/pyooq"
 )
 
 type Column struct {
 	Name string     `json:"name"`
-	Type types.Type `json:"type"`
+	Type pyooq.Type `json:"type"`
 }
 
 func (c Column) Append(out []byte) []byte {

@@ -1,4 +1,2 @@
-github.com/chronos-tachyon/go-emitter v0.1.0 h1:7z1oIYBeRN78+e1hsS+9XaYdFlDAamr7fTIz/RTovQ0=
-github.com/chronos-tachyon/go-emitter v0.1.0/go.mod h1:v57/ItRL4y8/ueoWIGAvBPYAElpK0WawG818iOYWQeU=
-github.com/chronos-tachyon/go-emitter v0.2.0 h1:7gYkUTMNGxn1PybujlPqgPGggiUSttB+m0iZQYFWdXA=
-github.com/chronos-tachyon/go-emitter v0.2.0/go.mod h1:v57/ItRL4y8/ueoWIGAvBPYAElpK0WawG818iOYWQeU=
+github.com/chronos-tachyon/assert v1.2.0 h1:/otmE4+VRwr1G+vkFMyBOH4JVgkgTAfbOJFa6PXGj8M=
+github.com/chronos-tachyon/assert v1.2.0/go.mod h1:dYdZxEBttPxK1l1Ytxnx8tnwfHHflGHqFA12rjOQwdY=

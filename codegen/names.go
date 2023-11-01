@@ -1,20 +1,61 @@
 package codegen
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 )
 
 var reSep = regexp.MustCompile(`[\s_-]+`)
 
-type Name []string
+func concat(list ...any) []string {
+	var n uint
+	for _, item := range list {
+		switch x := item.(type) {
+		case string:
+			n++
+		case []string:
+			n += uint(len(x))
+		default:
+			panic(fmt.Errorf("unexpected type %T", item))
+		}
+	}
+	if n <= 0 {
+		return nil
+	}
 
-func (name Name) Extend(str string) Name {
-	pieces := reSep.Split(str, -1)
-	return append(name, pieces...)
+	out := make([]string, 0, n)
+	for _, item := range list {
+		switch x := item.(type) {
+		case string:
+			out = append(out, x)
+		case []string:
+			out = append(out, x...)
+		}
+	}
+	return out
 }
 
-func (name Name) Join(sep string, mapfn func(string) string) string {
+func equalLists(a []string, b []string) bool {
+	an := uint(len(a))
+	bn := uint(len(b))
+	if an != bn {
+		return false
+	}
+	for i := uint(0); i < an; i++ {
+		ai, bi := a[i], b[i]
+		if ai != bi {
+			return false
+		}
+	}
+	return true
+}
+
+func splitName(str string) []string {
+	return reSep.Split(str, -1)
+}
+
+func joinName(name []string, sep string, mapfn func(string) string) string {
 	var out []byte
 	needSep := false
 	for _, str := range name {
@@ -33,13 +74,13 @@ func (name Name) Join(sep string, mapfn func(string) string) string {
 	return string(out)
 }
 
-func (name Name) CamelCase() string {
-	return name.Join("", nil)
+func camelCaseName(name []string) string {
+	return joinName(name, "", nil)
 }
 
-func (name Name) LowerCamelCase() string {
+func lowerCamelCaseName(name []string) string {
 	isFirst := true
-	return name.Join("", func(str string) string {
+	return joinName(name, "", func(str string) string {
 		if isFirst {
 			isFirst = false
 			return strings.ToLower(str)
@@ -48,26 +89,26 @@ func (name Name) LowerCamelCase() string {
 	})
 }
 
-func (name Name) SnakeCase() string {
-	return name.Join("_", nil)
+func snakeCaseName(name []string) string {
+	return joinName(name, "_", nil)
 }
 
-func (name Name) UpperSnakeCase() string {
-	return name.Join("_", strings.ToUpper)
+func upperSnakeCaseName(name []string) string {
+	return joinName(name, "_", strings.ToUpper)
 }
 
-func (name Name) LowerSnakeCase() string {
-	return name.Join("_", strings.ToLower)
+func lowerSnakeCaseName(name []string) string {
+	return joinName(name, "_", strings.ToLower)
 }
 
-func (name Name) KebabCase() string {
-	return name.Join("-", nil)
+func kebabCaseName(name []string) string {
+	return joinName(name, "-", nil)
 }
 
-func (name Name) UpperKebabCase() string {
-	return name.Join("-", strings.ToUpper)
+func upperKebabCaseName(name []string) string {
+	return joinName(name, "-", strings.ToUpper)
 }
 
-func (name Name) LowerKebabCase() string {
-	return name.Join("-", strings.ToLower)
+func lowerKebabCaseName(name []string) string {
+	return joinName(name, "-", strings.ToLower)
 }

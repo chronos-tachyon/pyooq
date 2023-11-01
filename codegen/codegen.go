@@ -5,7 +5,7 @@ import (
 )
 
 type CodeGenerator interface {
-	GenerateCode(s repr.Schema, params map[string]any) ([]GeneratedFile, error)
+	GenerateCode(s *repr.Schema, params map[string]any) ([]GeneratedFile, error)
 }
 
 type GeneratedFile struct {
